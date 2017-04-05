@@ -76,9 +76,9 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         mSpeech.setSpeechSynthesizerListener(this);
 
 //        // 文本模型文件路径 (离线引擎使用)
-//        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, "/sdcard/bdtts@Snser" + "/" + TEXT_MODEL_NAME);
+        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, SDCARD_DIR_ROOT + "/" + TEXT_MODEL_NAME);
 //        // 声学模型文件路径 (离线引擎使用)
-//        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, "/sdcard/bdtts@Snser" + "/" + SPEECH_FEMALE_MODEL_NAME);
+        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, SDCARD_DIR_ROOT + "/" + SPEECH_FEMALE_MODEL_NAME);
 
         //设置AppId和ApiKey
         mSpeech.setAppId("9481460");
@@ -93,7 +93,6 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         // 授权检测接口(只是通过AuthInfo进行检验授权是否成功。)
         // AuthInfo接口用于测试开发者是否成功申请了在线或者离线授权，如果测试授权成功了，可以删除AuthInfo部分的代码（该接口首次验证时比较耗时），不会影响正常使用（合成使用时SDK内部会自动验证授权）
         AuthInfo authInfo = mSpeech.auth(TtsMode.MIX);
-
         if (authInfo.isSuccess()) {
             XLog.d(TAG, "auth success");
         } else {
@@ -106,8 +105,8 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         XLog.d(TAG, "inittts ret=" + ret);
 
         // 加载离线英文资源（提供离线英文合成功能）
-//        int result = mSpeech.loadEnglishModel(SDCARD_DIR_ROOT + "/" + ENGLISH_TEXT_MODEL_NAME, SDCARD_DIR_ROOT + "/" + ENGLISH_SPEECH_FEMALE_MODEL_NAME);
-//        XLog.d(TAG, "loadEnglishModel result=" + result);
+        int result = mSpeech.loadEnglishModel(SDCARD_DIR_ROOT + "/" + ENGLISH_TEXT_MODEL_NAME, SDCARD_DIR_ROOT + "/" + ENGLISH_SPEECH_FEMALE_MODEL_NAME);
+        XLog.d(TAG, "loadEnglishModel result=" + result);
     }
 
 
@@ -150,7 +149,7 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
 
 
     public void test() {
-        int ret = mSpeech.speak("123");
+        int ret = mSpeech.speak("Hello");
         XLog.d(TAG, "test ret=" + ret);
     }
 
