@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="D:\Project\GitProjects\TestYuLai\app\libs\com.baidu.tts_2.3.0.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="23.0.3"
+        sha1="13821b9782a321df92a623074b28c8aee1f03348">
+        <dex dex="D:\Project\GitProjects\TestYuLai\app\build\intermediates\pre-dexed\debug\com.baidu.tts_2.3.0_b8591adf7f9ee7abbd6be3e20fc2131a7d4f0015.jar" />
+    </item>
+
+</items>
