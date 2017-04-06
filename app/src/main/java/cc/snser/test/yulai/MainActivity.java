@@ -1,11 +1,14 @@
 package cc.snser.test.yulai;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
 import cc.snser.test.yulai.speech.baidu.BaiduSpeechController;
+import cc.snser.test.yulai.xmly.XmlyController;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -27,13 +30,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_test_a:
-                BaiduSpeechController.getInstance().test(mEdit.getText().toString());
+                XmlyController.getInstance().test();
                 break;
             case R.id.btn_test_b:
-                BaiduSpeechController.getInstance().stop();
                 break;
             case R.id.btn_test_c:
-                BaiduSpeechController.getInstance().playTts("芝麻开门");
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.qihu.mobile.demo", "com.qihu.mobile.demo.MainActivity"));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 break;
             default:
                 break;

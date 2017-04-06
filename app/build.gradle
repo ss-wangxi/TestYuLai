@@ -4,13 +4,14 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
 
+    useLibrary 'org.apache.http.legacy'
+
     defaultConfig {
         applicationId "cc.snser.test.yulai"
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {

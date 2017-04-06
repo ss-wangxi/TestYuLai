@@ -13,6 +13,17 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <!-- BaiduSpeech End -->
 
+    <!-- Ximalaya Begin -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+    <!-- Ximalaya End -->
+
     <application
         android:allowBackup="false"
         android:name=".App"
@@ -25,6 +36,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Ximalaya Begin -->
+        <meta-data
+            android:name="app_key"
+            android:value="b617866c20482d133d5de66fceb37da3" />
+        <meta-data
+            android:name="pack_id"
+            android:value="com.app.test.android" />
+        <!-- Ximalaya End -->
+
     </application>
 
 </manifest>

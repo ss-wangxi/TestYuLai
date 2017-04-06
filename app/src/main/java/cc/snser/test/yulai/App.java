@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 
 import cc.snser.test.yulai.speech.baidu.BaiduSpeechController;
+import cc.snser.test.yulai.xmly.XmlyController;
 
 /**
  * Created by wangxi-xy on 2017/4/5.
@@ -23,6 +24,7 @@ public class App extends Application {
 
     private void globalInit() {
         BaiduSpeechController.getInstance().init();
+        XmlyController.getInstance().init();
     }
 
 
