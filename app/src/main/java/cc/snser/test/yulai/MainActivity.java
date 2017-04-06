@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import cc.snser.test.yulai.speech.baidu.BaiduSpeechController;
+
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private EditText mEdit;

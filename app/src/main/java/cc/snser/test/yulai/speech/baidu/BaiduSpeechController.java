@@ -1,4 +1,4 @@
-package cc.snser.test.yulai;
+package cc.snser.test.yulai.speech.baidu;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -14,6 +14,7 @@ import com.baidu.tts.client.TtsMode;
 import java.io.File;
 import java.util.ArrayList;
 
+import cc.snser.test.yulai.App;
 import cc.snser.test.yulai.util.FileUtils;
 import cc.snser.test.yulai.util.XLog;
 
