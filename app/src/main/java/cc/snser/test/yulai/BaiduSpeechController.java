@@ -2,6 +2,7 @@ package cc.snser.test.yulai;
 
 import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 
 import com.baidu.tts.auth.AuthInfo;
 import com.baidu.tts.client.SpeechError;
@@ -22,16 +23,25 @@ import cc.snser.test.yulai.util.XLog;
 public class BaiduSpeechController implements SpeechSynthesizerListener {
     private static final String TAG = "BaiduSpeechController";
 
-    private static final String SAMPLE_DIR_NAME = "BaiduTTS@Snser";
-    private static final String SPEECH_FEMALE_MODEL_NAME = "bd_etts_speech_female.dat";
-    private static final String SPEECH_MALE_MODEL_NAME = "bd_etts_speech_male.dat";
-    private static final String TEXT_MODEL_NAME = "bd_etts_text.dat";
-    private static final String ENGLISH_SPEECH_FEMALE_MODEL_NAME = "bd_etts_speech_female_en.dat";
-    private static final String ENGLISH_SPEECH_MALE_MODEL_NAME = "bd_etts_speech_male_en.dat";
-    private static final String ENGLISH_TEXT_MODEL_NAME = "bd_etts_text_en.dat";
+    private static final String DIR_SDCARD = new File(Environment.getExternalStorageDirectory(), "bdtts@snser").getAbsolutePath();
+    private static final String DIR_ASSETS = "bdtts";
+
+    // 在线引擎发音人（0:普通女声，1:普通男声，2:特别男声，3:情感男声）
+    private static final String SPEAKER_FEMALE = "0";
+    private static final String SPEAKER = SPEAKER_FEMALE;
+
+    private static final String MODEL_SPEECH_FEMALE_CN = "bd_etts_speech_female.dat"; //离线引擎声学模型-女声-中文
+    private static final String MODEL_SPEECH_FEMALE_EN = "bd_etts_speech_female_en.dat"; //离线引擎声学模型-女声-英文
+    private static final String MODEL_SPEECH_MALE_CN = "bd_etts_speech_male.dat"; //离线引擎声学模型-男声-中文
+    private static final String MODEL_SPEECH_MALE_EN = "bd_etts_speech_male_en.dat"; //离线引擎声学模型-男声-英文
+
+    private static final String MODEL_SPEECH_CN = SPEAKER_FEMALE.equals(SPEAKER) ? MODEL_SPEECH_FEMALE_CN : MODEL_SPEECH_MALE_CN;
+    private static final String MODEL_SPEECH_EN = SPEAKER_FEMALE.equals(SPEAKER) ? MODEL_SPEECH_FEMALE_EN : MODEL_SPEECH_MALE_EN;
+
+    private static final String MODEL_TEXT_CN = "bd_etts_text.dat"; //离线引擎文本模型-中文
+    private static final String MODEL_TEXT_EN = "bd_etts_text_en.dat"; //离线引擎文本模型-英文
 
     private SpeechSynthesizer mSpeech;
-
 
     private BaiduSpeechController() {
     }
@@ -45,111 +55,94 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
     }
 
     public void init() {
-        copyData();
-        initialTts();
+        copyModelData();
+        initTts();
     }
 
-    private void copyData() {
+    private void copyModelData() {
         final Context context = App.getAppContext();
-        final String SDCARD_DIR_ROOT = Environment.getExternalStorageDirectory().toString() + File.separator + "bdtts@snser";
-        new File(SDCARD_DIR_ROOT).mkdirs();
-        final ArrayList<File> asssetFileNames = new ArrayList<File>() {
+        new File(DIR_SDCARD).mkdirs();
+        final ArrayList<File> asssetFiles = new ArrayList<File>() {
             {
-                add(new File("bdtts/bd_etts_speech_female.dat"));
-                add(new File("bdtts/bd_etts_speech_male.dat"));
-                add(new File("bdtts/bd_etts_text.dat"));
-                add(new File("bdtts/bd_etts_speech_female_en.dat"));
-                add(new File("bdtts/bd_etts_speech_male_en.dat"));
-                add(new File("bdtts/bd_etts_text_en.dat"));
+                add(new File(DIR_ASSETS, MODEL_SPEECH_FEMALE_CN));
+                add(new File(DIR_ASSETS, MODEL_SPEECH_FEMALE_EN));
+                add(new File(DIR_ASSETS, MODEL_SPEECH_MALE_CN));
+                add(new File(DIR_ASSETS, MODEL_SPEECH_MALE_EN));
+                add(new File(DIR_ASSETS, MODEL_TEXT_CN));
+                add(new File(DIR_ASSETS, MODEL_TEXT_EN));
             }
         };
-        for (File asssetFileName : asssetFileNames) {
-            FileUtils.copyAssetsToSdcard(context, asssetFileName.getPath(), SDCARD_DIR_ROOT + File.separator + asssetFileName.getName(), false);
+        for (File asssetFile : asssetFiles) {
+            FileUtils.copyAssetsToSdcard(context, asssetFile.getPath(), new File(DIR_SDCARD, asssetFile.getName()).getAbsolutePath(), false);
         }
     }
 
-    private void initialTts() {
-        final String SDCARD_DIR_ROOT = Environment.getExternalStorageDirectory().toString() + File.separator + "bdtts@snser";
-
+    private void initTts() {
         mSpeech = SpeechSynthesizer.getInstance();
         mSpeech.setContext(App.getAppContext());
         mSpeech.setSpeechSynthesizerListener(this);
-
-//        // 文本模型文件路径 (离线引擎使用)
-        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, SDCARD_DIR_ROOT + "/" + TEXT_MODEL_NAME);
-//        // 声学模型文件路径 (离线引擎使用)
-        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, SDCARD_DIR_ROOT + "/" + SPEECH_FEMALE_MODEL_NAME);
-
         //设置AppId和ApiKey
         mSpeech.setAppId("9481460");
         mSpeech.setApiKey("i6SEvt6VgTCZPbDxiPUECyxT", "cec7b576ae2f07ea7bd2f986da4aa168");
-
-        // 发音人（在线引擎），可用参数为0,1,2,3。。。（服务器端会动态增加，各值含义参考文档，以文档说明为准。0--普通女声，1--普通男声，2--特别男声，3--情感男声。。。）
-        mSpeech.setParam(SpeechSynthesizer.PARAM_SPEAKER, "0");
-
-        // 设置Mix模式的合成策略
+        //设置在线引擎发音人
+        mSpeech.setParam(SpeechSynthesizer.PARAM_SPEAKER, SPEAKER);
+        //设置离线引擎模型
+        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, new File(DIR_SDCARD, MODEL_TEXT_CN).getAbsolutePath());
+        mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, new File(DIR_SDCARD, MODEL_SPEECH_CN).getAbsolutePath());
+        //设置Mix模式的合成策略
         mSpeech.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
-
-        // 授权检测接口(只是通过AuthInfo进行检验授权是否成功。)
-        // AuthInfo接口用于测试开发者是否成功申请了在线或者离线授权，如果测试授权成功了，可以删除AuthInfo部分的代码（该接口首次验证时比较耗时），不会影响正常使用（合成使用时SDK内部会自动验证授权）
-        AuthInfo authInfo = mSpeech.auth(TtsMode.MIX);
-        if (authInfo.isSuccess()) {
-            XLog.d(TAG, "auth success");
-        } else {
-            String errorMsg = authInfo.getTtsError().getDetailMessage();
-            XLog.d(TAG, "auth failed errorMsg=" + errorMsg);
+        //初始化tts
+        final int initTtsRet = mSpeech.initTts(TtsMode.MIX);
+        //加载离线英文资源（提供离线英文合成功能）
+        final String modelTextEnPath = new File(DIR_SDCARD, MODEL_TEXT_EN).getAbsolutePath();
+        final String modelSpeechEnPath = new File(DIR_SDCARD, MODEL_SPEECH_EN).getAbsolutePath();
+        final int initEnModelRet = mSpeech.loadEnglishModel(modelTextEnPath, modelSpeechEnPath);
+        //授权检测接口（仅调试需要查看，release不需要，因为sdk内部已经有校验逻辑了）
+        if (App.getApp().isDebugMode()) {
+            final AuthInfo authInfo = mSpeech.auth(TtsMode.MIX);
+            if (authInfo.isSuccess()) {
+                XLog.w(TAG, "initTts auth success");
+            } else {
+                String errorMsg = authInfo.getTtsError().getDetailMessage();
+                XLog.w(TAG, "initTts auth failed errorMsg=" + errorMsg);
+            }
         }
-
-        // 初始化tts
-        int ret = mSpeech.initTts(TtsMode.MIX);
-        XLog.d(TAG, "inittts ret=" + ret);
-
-        // 加载离线英文资源（提供离线英文合成功能）
-        int result = mSpeech.loadEnglishModel(SDCARD_DIR_ROOT + "/" + ENGLISH_TEXT_MODEL_NAME, SDCARD_DIR_ROOT + "/" + ENGLISH_SPEECH_FEMALE_MODEL_NAME);
-        XLog.d(TAG, "loadEnglishModel result=" + result);
+        XLog.w(TAG, "initTts initTtsRet=" + initTtsRet + " initEnModelRet=" + initEnModelRet);
     }
 
 
     /* SpeechSynthesizerListener begin */
     @Override
     public void onSynthesizeStart(String s) {
-        XLog.d(TAG, "onSynthesizeStart");
     }
 
     @Override
     public void onSynthesizeDataArrived(String s, byte[] bytes, int i) {
-        XLog.d(TAG, "onSynthesizeDataArrived");
     }
 
     @Override
     public void onSynthesizeFinish(String s) {
-        XLog.d(TAG, "onSynthesizeFinish");
     }
 
     @Override
     public void onSpeechStart(String s) {
-        XLog.d(TAG, "onSpeechStart");
     }
 
     @Override
     public void onSpeechProgressChanged(String s, int i) {
-        XLog.d(TAG, "onSpeechProgressChanged");
     }
 
     @Override
     public void onSpeechFinish(String s) {
-        XLog.d(TAG, "onSpeechFinish");
     }
 
     @Override
     public void onError(String s, SpeechError speechError) {
-        XLog.d(TAG, "onError");
     }
     /* SpeechSynthesizerListener end */
 
-
-    public void test() {
-        int ret = mSpeech.speak("Hello");
+    public void test(String text) {
+        int ret = mSpeech.speak(!TextUtils.isEmpty(text) ? text : "你好巴迪");
         XLog.d(TAG, "test ret=" + ret);
     }
 

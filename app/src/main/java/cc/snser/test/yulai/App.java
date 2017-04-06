@@ -2,6 +2,7 @@ package cc.snser.test.yulai;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 
 /**
  * Created by wangxi-xy on 2017/4/5.
@@ -18,6 +19,11 @@ public class App extends Application {
         globalInit();
     }
 
+    private void globalInit() {
+        BaiduSpeechController.getInstance().init();
+    }
+
+
     public static App getApp() {
         return sApplication;
     }
@@ -26,8 +32,12 @@ public class App extends Application {
         return sApplication.getApplicationContext();
     }
 
-    private void globalInit() {
-        BaiduSpeechController.getInstance().init();
+    public boolean isDebugMode() {
+        try {
+            return (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

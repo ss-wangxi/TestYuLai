@@ -8,6 +8,12 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="cc.snser.test.yulai.MainActivity">
+    
+    <EditText
+        android:id="@+id/edit"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:gravity="top|left"/>
 
     <Button
         android:id="@+id/btn_test_a"
