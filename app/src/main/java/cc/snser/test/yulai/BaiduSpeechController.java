@@ -1,6 +1,7 @@
 package cc.snser.test.yulai;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.text.TextUtils;
 
@@ -45,8 +46,11 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
     private static final String MODEL_TEXT_CN = "bd_etts_text.dat"; //离线引擎文本模型-中文
     private static final String MODEL_TEXT_EN = "bd_etts_text_en.dat"; //离线引擎文本模型-英文
 
+    private boolean mInited = false;
+
     private SpeechSynthesizer mSpeech;
 
+    private OnInitListener mOnInitListener;
     private OnCompletionListener mOnCompletionListener;
 
     private BaiduSpeechController() {
@@ -56,13 +60,30 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         static BaiduSpeechController INSTANCE = new BaiduSpeechController();
     }
 
-    public static BaiduSpeechController getInstance() {
+    private static BaiduSpeechController getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
     public void init() {
-        copyModelData();
-        initTts();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected void onPreExecute() {
+                XLog.d(TAG, "init start");
+                setInited(false);
+            }
+            @Override
+            protected Void doInBackground(Void... params) {
+                copyModelData();
+                initTts();
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                XLog.d(TAG, "init done");
+                setInited(true);
+                notifyInit();
+            }
+        }.execute();
     }
 
     private void copyModelData() {
@@ -96,7 +117,7 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, new File(DIR_SDCARD, MODEL_TEXT_CN).getAbsolutePath());
         mSpeech.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, new File(DIR_SDCARD, MODEL_SPEECH_CN).getAbsolutePath());
         //设置Mix模式的合成策略
-        mSpeech.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
+        mSpeech.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE_WIFI);
         //初始化tts
         final int initTtsRet = mSpeech.initTts(TtsMode.MIX);
         //加载离线英文资源（提供离线英文合成功能）
@@ -150,10 +171,47 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
     /* SpeechSynthesizerListener end */
 
 
-    public void stop() {
-        mSpeech.stop();
-        notifyCompletion();
+    public boolean playTts(String text) {
+        boolean succ = false;
+        if (isInited() && !TextUtils.isEmpty(text)) {
+            succ = (mSpeech.speak(text) == 0);
+        }
+        return succ;
     }
+
+    public boolean stop() {
+        boolean succ = false;
+        if (isInited()) {
+            succ = (mSpeech.stop() == 0);
+            notifyCompletion();
+        }
+        return succ;
+    }
+
+
+    public interface OnInitListener {
+        void onInit();
+    }
+
+    public void setOnInitListener(OnInitListener listener) {
+        mOnInitListener = listener;
+    }
+
+    private void notifyInit() {
+        XLog.d(TAG, "notifyInit");
+        if (mOnInitListener != null) {
+            mOnInitListener.onInit();
+        }
+    }
+
+    private synchronized void setInited(boolean inited) {
+        mInited = inited;
+    }
+
+    public synchronized boolean isInited() {
+        return mInited;
+    }
+
 
     public interface OnCompletionListener {
         void onCompletion();
@@ -169,6 +227,7 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
             mOnCompletionListener.onCompletion();
         }
     }
+
 
     public void test(String text) {
         int ret = mSpeech.speak(!TextUtils.isEmpty(text) ? text : "你好巴迪");

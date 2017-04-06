@@ -31,6 +31,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 BaiduSpeechController.getInstance().stop();
                 break;
             case R.id.btn_test_c:
+                BaiduSpeechController.getInstance().playTts("芝麻开门");
                 break;
             default:
                 break;
