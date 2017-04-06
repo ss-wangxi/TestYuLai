@@ -1,8 +1,12 @@
 package cc.snser.test.yulai;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.text.TextUtils;
+
+import java.util.List;
 
 import cc.snser.test.yulai.speech.baidu.BaiduSpeechController;
 import cc.snser.test.yulai.xmly.XmlyController;
@@ -23,8 +27,11 @@ public class App extends Application {
     }
 
     private void globalInit() {
-        BaiduSpeechController.getInstance().init();
-        XmlyController.getInstance().init();
+        //只在主进程初始化一次
+        if (getProgressPid(getAppContext(), getAppContext().getPackageName()) == android.os.Process.myPid()) {
+            BaiduSpeechController.getInstance().init();
+            XmlyController.getInstance().init();
+        }
     }
 
 
@@ -42,6 +49,19 @@ public class App extends Application {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static int getProgressPid(Context context, String progressName) {
+        if (!TextUtils.isEmpty(progressName)) {
+            ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+            final List<ActivityManager.RunningAppProcessInfo> processes = am.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo process : processes) {
+                if (progressName.equals(process.processName) && process.pkgList != null) {
+                    return process.pid;
+                }
+            }
+        }
+        return -1;
     }
 
 }

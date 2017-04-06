@@ -38,6 +38,11 @@
         </activity>
 
         <!-- Ximalaya Begin -->
+        <service
+            android:name="com.ximalaya.ting.android.opensdk.player.service.XmPlayerService"
+            android:exported="true"
+            android:process=":xmplayer" >
+        </service>
         <meta-data
             android:name="app_key"
             android:value="b617866c20482d133d5de66fceb37da3" />
