@@ -60,7 +60,7 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         static BaiduSpeechController INSTANCE = new BaiduSpeechController();
     }
 
-    private static BaiduSpeechController getInstance() {
+    public static BaiduSpeechController getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
