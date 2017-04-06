@@ -28,6 +28,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 BaiduSpeechController.getInstance().test(mEdit.getText().toString());
                 break;
             case R.id.btn_test_b:
+                BaiduSpeechController.getInstance().stop();
                 break;
             case R.id.btn_test_c:
                 break;

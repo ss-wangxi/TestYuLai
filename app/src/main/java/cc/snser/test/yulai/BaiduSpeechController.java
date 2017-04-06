@@ -23,6 +23,10 @@ import cc.snser.test.yulai.util.XLog;
 public class BaiduSpeechController implements SpeechSynthesizerListener {
     private static final String TAG = "BaiduSpeechController";
 
+    private static final String APP_ID = "9481460";
+    private static final String API_KEY = "i6SEvt6VgTCZPbDxiPUECyxT";
+    private static final String SECRET_KEY = "cec7b576ae2f07ea7bd2f986da4aa168";
+
     private static final String DIR_SDCARD = new File(Environment.getExternalStorageDirectory(), "bdtts@snser").getAbsolutePath();
     private static final String DIR_ASSETS = "bdtts";
 
@@ -42,6 +46,8 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
     private static final String MODEL_TEXT_EN = "bd_etts_text_en.dat"; //离线引擎文本模型-英文
 
     private SpeechSynthesizer mSpeech;
+
+    private OnCompletionListener mOnCompletionListener;
 
     private BaiduSpeechController() {
     }
@@ -82,8 +88,8 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
         mSpeech.setContext(App.getAppContext());
         mSpeech.setSpeechSynthesizerListener(this);
         //设置AppId和ApiKey
-        mSpeech.setAppId("9481460");
-        mSpeech.setApiKey("i6SEvt6VgTCZPbDxiPUECyxT", "cec7b576ae2f07ea7bd2f986da4aa168");
+        mSpeech.setAppId(APP_ID);
+        mSpeech.setApiKey(API_KEY, SECRET_KEY);
         //设置在线引擎发音人
         mSpeech.setParam(SpeechSynthesizer.PARAM_SPEAKER, SPEAKER);
         //设置离线引擎模型
@@ -134,12 +140,35 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
 
     @Override
     public void onSpeechFinish(String s) {
+        notifyCompletion();
     }
 
     @Override
     public void onError(String s, SpeechError speechError) {
+        notifyCompletion();
     }
     /* SpeechSynthesizerListener end */
+
+
+    public void stop() {
+        mSpeech.stop();
+        notifyCompletion();
+    }
+
+    public interface OnCompletionListener {
+        void onCompletion();
+    }
+
+    public void setOnCompletionListener(OnCompletionListener listener) {
+        mOnCompletionListener = listener;
+    }
+
+    private void notifyCompletion() {
+        XLog.d(TAG, "notifyCompletion");
+        if (mOnCompletionListener != null) {
+            mOnCompletionListener.onCompletion();
+        }
+    }
 
     public void test(String text) {
         int ret = mSpeech.speak(!TextUtils.isEmpty(text) ? text : "你好巴迪");
