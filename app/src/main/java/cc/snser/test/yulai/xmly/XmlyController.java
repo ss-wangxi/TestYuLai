@@ -10,12 +10,15 @@ import com.ximalaya.ting.android.opensdk.model.category.Category;
 import com.ximalaya.ting.android.opensdk.model.category.CategoryList;
 import com.ximalaya.ting.android.opensdk.model.tag.Tag;
 import com.ximalaya.ting.android.opensdk.model.tag.TagList;
+import com.ximalaya.ting.android.opensdk.model.track.Track;
 import com.ximalaya.ting.android.opensdk.model.track.TrackList;
 import com.ximalaya.ting.android.opensdk.player.XmPlayerManager;
 import com.ximalaya.ting.android.opensdk.player.service.IXmPlayerStatusListener;
 import com.ximalaya.ting.android.opensdk.player.service.XmPlayerException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -125,14 +128,14 @@ public class XmlyController implements IXmPlayerStatusListener {
      * @return 列表信息
      */
     public JsonNodeListResult requestNodeList(JsonNodeListResult.JsonNodeItem parentNode, int last) {
-        if (parentNode == null || parentNode.rawData == null) {
+        if (parentNode == null) {
             return JsonNodeListResult.parse(null, requestCategoryList());
         } else if (parentNode.rawcls == Category.class) {
-            return JsonNodeListResult.parse(parentNode, requestTagList((Category)parentNode.rawData));
+            return JsonNodeListResult.parse(parentNode, requestTagList(parentNode.rootId));
         } else if (parentNode.rawcls == Tag.class) {
-            return JsonNodeListResult.parse(parentNode, requestAlbumList((Tag)parentNode.rawData, parentNode.rootId, last));
+            return JsonNodeListResult.parse(parentNode, requestAlbumList(parentNode.rootId, parentNode.title, last));
         } else if (parentNode.rawcls == Album.class) {
-            return JsonNodeListResult.parse(parentNode, requestTrackList((Album)parentNode.rawData, last));
+            return JsonNodeListResult.parse(parentNode, requestTrackList(parentNode.id, last));
         } else {
             return null;
         }
@@ -150,12 +153,12 @@ public class XmlyController implements IXmPlayerStatusListener {
         return callBack.getData();
     }
 
-    private TagList requestTagList(Category category) {
+    private TagList requestTagList(long categoryId) {
         final DataCallBack<TagList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
             final Map<String, String> params = new HashMap<>();
-            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(category.getId()));
+            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(categoryId));
             params.put(DTransferConstants.TYPE, "0");
             CommonRequest.getTags(params, callBack);
             callBack.waitCallback(TIMEOUT_REQUEST_MILLIS);
@@ -165,7 +168,7 @@ public class XmlyController implements IXmPlayerStatusListener {
         return callBack.getData();
     }
 
-    private AlbumList requestAlbumList(Tag tag, long categoryId, int last) {
+    private AlbumList requestAlbumList(long categoryId, String tagName, int last) {
         final DataCallBack<AlbumList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
@@ -173,7 +176,7 @@ public class XmlyController implements IXmPlayerStatusListener {
             final int pageId = last > 0 ? (last + 1) / pageSize : 1;
             final Map<String, String> params = new HashMap<>();
             params.put(DTransferConstants.CATEGORY_ID, String.valueOf(categoryId));
-            params.put(DTransferConstants.TAG_NAME, tag.getTagName());
+            params.put(DTransferConstants.TAG_NAME, tagName);
             params.put(DTransferConstants.CALC_DIMENSION ,"1");
             params.put(DTransferConstants.PAGE_SIZE, String.valueOf(pageSize));
             params.put(DTransferConstants.PAGE, String.valueOf(pageId));
@@ -185,14 +188,14 @@ public class XmlyController implements IXmPlayerStatusListener {
         return callBack.getData();
     }
 
-    private TrackList requestTrackList(Album album, int last) {
+    private TrackList requestTrackList(long albumId, int last) {
         final DataCallBack<TrackList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
             final int pageSize = DEFAULT_PAGE_SIZE;
             final int pageId = last > 0 ? (last + 1) / pageSize : 1;
             final Map<String, String> params = new HashMap<>();
-            params.put(DTransferConstants.ALBUM_ID, String.valueOf(album.getId()));
+            params.put(DTransferConstants.ALBUM_ID, String.valueOf(albumId));
             params.put(DTransferConstants.PAGE_SIZE, String.valueOf(pageSize));
             params.put(DTransferConstants.PAGE, String.valueOf(pageId));
             CommonRequest.getTracks(params, callBack);
@@ -256,6 +259,9 @@ public class XmlyController implements IXmPlayerStatusListener {
                     XLog.d(TAG, TAG);
                     JsonNodeListResult tracks = requestNodeList(albums.items.get(1), -1);
                     XLog.d(TAG, TAG);
+                    List<Track> tt = new ArrayList<>();
+                    tt.add((Track) tracks.items.get(0).rawData);
+                    mPlayerManager.playList(tt, 0);
                 }
             }).start();
         }
@@ -300,7 +306,7 @@ public class XmlyController implements IXmPlayerStatusListener {
 //            CommonRequest.getTracks(map, new IDataCallBack<TrackList>() {
 //                @Override
 //                public void onSuccess(TrackList trackList) {
-//                    Log.d("", "");
+//                    XLog.d("", "");
 //                    //播放声音（五级）
 //                    mPlayerManager.playList(trackList.getTracks(), 1); //第2章 刮骨疗伤 （有声书-言情-神医嫡女）
 //                }

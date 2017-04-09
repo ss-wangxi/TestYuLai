@@ -59,9 +59,11 @@ public class JsonNodeListResult {
         transient public JsonNodeListResult parentInfo;
 
         transient public Class<?> rawcls; //原始数据类型
+        transient public Object rawData;
 
         public JsonNodeItem(Object rawData, long id, long parentId, long rootId, String title) {
             this.rawcls = rawData.getClass();
+            this.rawData = rawData; //只有track才需要，TODO 后续改一下
             this.id = id;
             this.parentId = parentId;
             this.rootId = rootId;

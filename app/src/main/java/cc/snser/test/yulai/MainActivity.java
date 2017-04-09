@@ -33,6 +33,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 XmlyController.getInstance().test();
                 break;
             case R.id.btn_test_b:
+                BaiduSpeechController.getInstance().playTts(mEdit.getText().toString());
                 break;
             case R.id.btn_test_c:
                 Intent intent = new Intent();
