@@ -129,19 +129,19 @@ public class XmlyController implements IXmPlayerStatusListener {
      */
     public JsonNodeListResult requestNodeList(JsonNodeListResult.JsonNodeItem parentNode, int last) {
         if (parentNode == null) {
-            return JsonNodeListResult.parse(null, requestCategoryList());
+            return requestCategoryList();
         } else if (parentNode.rawcls == Category.class) {
-            return JsonNodeListResult.parse(parentNode, requestTagList(parentNode.rootId));
+            return requestTagList(parentNode);
         } else if (parentNode.rawcls == Tag.class) {
-            return JsonNodeListResult.parse(parentNode, requestAlbumList(parentNode.rootId, parentNode.title, last));
+            return requestAlbumList(parentNode, last);
         } else if (parentNode.rawcls == Album.class) {
-            return JsonNodeListResult.parse(parentNode, requestTrackList(parentNode.id, last));
+            return requestTrackList(parentNode, last);
         } else {
             return null;
         }
     }
 
-    private CategoryList requestCategoryList() {
+    private JsonNodeListResult requestCategoryList() {
         final DataCallBack<CategoryList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
@@ -150,33 +150,33 @@ public class XmlyController implements IXmPlayerStatusListener {
         } finally {
             callBack.unlock();
         }
-        return callBack.getData();
+        return JsonNodeListResult.parse(callBack.getData());
     }
 
-    private TagList requestTagList(long categoryId) {
+    private JsonNodeListResult requestTagList(JsonNodeListResult.JsonNodeItem categoryNode) {
         final DataCallBack<TagList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
             final Map<String, String> params = new HashMap<>();
-            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(categoryId));
+            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(categoryNode.id));
             params.put(DTransferConstants.TYPE, "0");
             CommonRequest.getTags(params, callBack);
             callBack.waitCallback(TIMEOUT_REQUEST_MILLIS);
         } finally {
             callBack.unlock();
         }
-        return callBack.getData();
+        return JsonNodeListResult.parse(categoryNode, callBack.getData());
     }
 
-    private AlbumList requestAlbumList(long categoryId, String tagName, int last) {
+    private JsonNodeListResult requestAlbumList(JsonNodeListResult.JsonNodeItem tagNode, int last) {
         final DataCallBack<AlbumList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
             final int pageSize = DEFAULT_PAGE_SIZE;
             final int pageId = last > 0 ? (last + 1) / pageSize : 1;
             final Map<String, String> params = new HashMap<>();
-            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(categoryId));
-            params.put(DTransferConstants.TAG_NAME, tagName);
+            params.put(DTransferConstants.CATEGORY_ID, String.valueOf(tagNode.rootId));
+            params.put(DTransferConstants.TAG_NAME, tagNode.title);
             params.put(DTransferConstants.CALC_DIMENSION ,"1");
             params.put(DTransferConstants.PAGE_SIZE, String.valueOf(pageSize));
             params.put(DTransferConstants.PAGE, String.valueOf(pageId));
@@ -185,17 +185,17 @@ public class XmlyController implements IXmPlayerStatusListener {
         } finally {
             callBack.unlock();
         }
-        return callBack.getData();
+        return JsonNodeListResult.parse(tagNode, callBack.getData());
     }
 
-    private TrackList requestTrackList(long albumId, int last) {
+    private JsonNodeListResult requestTrackList(JsonNodeListResult.JsonNodeItem albumNode, int last) {
         final DataCallBack<TrackList> callBack = new DataCallBack<>();
         callBack.lock();
         try {
             final int pageSize = DEFAULT_PAGE_SIZE;
             final int pageId = last > 0 ? (last + 1) / pageSize : 1;
             final Map<String, String> params = new HashMap<>();
-            params.put(DTransferConstants.ALBUM_ID, String.valueOf(albumId));
+            params.put(DTransferConstants.ALBUM_ID, String.valueOf(albumNode.id));
             params.put(DTransferConstants.PAGE_SIZE, String.valueOf(pageSize));
             params.put(DTransferConstants.PAGE, String.valueOf(pageId));
             CommonRequest.getTracks(params, callBack);
@@ -203,16 +203,7 @@ public class XmlyController implements IXmPlayerStatusListener {
         } finally {
             callBack.unlock();
         }
-        return callBack.getData();
-    }
-
-    /**
-     * 获取叶子节点的详情
-     * @param node 叶子节点
-     * @return 详情
-     */
-    public static JsonNodeInfoResult requestNodeInfo(Object node) {
-        return null;
+        return JsonNodeListResult.parse(albumNode, callBack.getData());
     }
     /* RequestData End */
 
@@ -261,7 +252,7 @@ public class XmlyController implements IXmPlayerStatusListener {
                     XLog.d(TAG, TAG);
                     List<Track> tt = new ArrayList<>();
                     tt.add((Track) tracks.items.get(0).rawData);
-                    mPlayerManager.playList(tt, 0);
+                    //mPlayerManager.playList(tt, 0);
                 }
             }).start();
         }

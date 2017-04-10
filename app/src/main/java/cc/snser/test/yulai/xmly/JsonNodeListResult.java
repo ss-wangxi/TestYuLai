@@ -31,7 +31,6 @@ public class JsonNodeListResult {
     public long id;
     public int code;
     public String title;
-    public String title_mp3;
     public int mode;
     public int total; //当前node所有item的个数，不限于当次请求
     public int skip;
@@ -46,24 +45,23 @@ public class JsonNodeListResult {
 
     public static class JsonNodeItem {
         public long id;
+        public long parentId; //父节点的nodeid
+        public long rootId; //根节点的nodeid
         public String icon;
         public String title;
-        public String title_mp3;
         transient public int position; //在列表中的位置
         public int positionOriginal; //在原始列表中的位置（最近播放列表中使用）
         public int progress; //播放进度
-        public long parentId; //父节点的nodeid
-        public long rootId; //根节点的nodeid
         transient public int iconResId;
         transient public boolean actived;
         transient public JsonNodeListResult parentInfo;
 
         transient public Class<?> rawcls; //原始数据类型
-        transient public Object rawData;
+        transient public Object rawData;  //原始数据（目前只有Track会写这个字段）
 
         public JsonNodeItem(Object rawData, long id, long parentId, long rootId, String title) {
             this.rawcls = rawData.getClass();
-            this.rawData = rawData; //只有track才需要，TODO 后续改一下
+            this.rawData = (rawcls == Track.class ? rawData : null); //只有track才需要
             this.id = id;
             this.parentId = parentId;
             this.rootId = rootId;
@@ -73,14 +71,13 @@ public class JsonNodeListResult {
 
 
     /* parse from ximalaya begin */
-    static JsonNodeListResult parse(JsonNodeItem parentNode, CategoryList categoryList) {
+    static JsonNodeListResult parse(CategoryList categoryList) {
         JsonNodeListResult result = null;
         if (categoryList != null) {
             result = new JsonNodeListResult();
             result.id = ID_UNKNOWN;
             result.mode = Server.LIST_DIRECTORY;
             result.title = "";
-            result.title_mp3 = "";
             for (Category category : categoryList.getCategories()) {
                 result.items.add(new JsonNodeItem(category, category.getId(), result.id, category.getId(), category.getCategoryName()));
             }
@@ -96,7 +93,6 @@ public class JsonNodeListResult {
             result.id = ID_UNKNOWN;
             result.mode = Server.LIST_DIRECTORY;
             result.title = parentNode.title;
-            result.title_mp3 = parentNode.title_mp3;
             for (Tag tag : tagList.getTagList()) {
                 result.items.add(new JsonNodeItem(tag, ID_UNKNOWN, result.id, parentNode.rootId, tag.getTagName()));
             }
@@ -112,7 +108,6 @@ public class JsonNodeListResult {
             result.id = ID_UNKNOWN;
             result.mode = Server.LIST_DIRECTORY;
             result.title = parentNode.title;
-            result.title_mp3 = parentNode.title_mp3;
             for (Album album : albumList.getAlbums()) {
                 result.items.add(new JsonNodeItem(album, album.getId(), result.id, parentNode.rootId, album.getAlbumTitle()));
             }
@@ -128,7 +123,6 @@ public class JsonNodeListResult {
             result.id = ID_UNKNOWN;
             result.mode = Server.LIST_DIRECTORY;
             result.title = parentNode.title;
-            result.title_mp3 = parentNode.title_mp3;
             for (Track track : trackList.getTracks()) {
                 result.items.add(new JsonNodeItem(track, track.getDataId(), result.id, parentNode.rootId, track.getTrackTitle()));
             }
@@ -164,16 +158,10 @@ public class JsonNodeListResult {
     public static JsonNodeListResult build(int id, JsonNodeListResult result) {
         if (result != null && result.checkVaild()) {
             result.id = id;
-            if (!TextUtils.isEmpty(result.title_mp3) && !result.title_mp3.startsWith(Server.HOST)) {
-                result.title_mp3 = Server.HOST + result.title_mp3;
-            }
             int position = -1;
             final Iterator<JsonNodeItem> iter = result.items.iterator();
             while (iter.hasNext()) {
                 final JsonNodeItem item = iter.next();
-                if (!TextUtils.isEmpty(item.title_mp3) && !item.title_mp3.startsWith(Server.HOST)) {
-                    item.title_mp3 = Server.HOST + item.title_mp3;
-                }
                 if (!TextUtils.isEmpty(item.icon)) {
                     item.iconResId = RUtils.drawable.name(App.getAppContext(), item.icon);
                 }
@@ -234,7 +222,6 @@ public class JsonNodeListResult {
              && (this.mode == Server.LIST_UNKNOWN || this.mode == newResult.mode)) {
             this.id = newResult.id;
             this.title = newResult.title;
-            this.title_mp3 = newResult.title_mp3;
             this.total = newResult.total;
             this.mode = newResult.mode;
             int position = this.size() - 1;
