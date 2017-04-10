@@ -168,7 +168,7 @@ public class JsonNodeListResult {
                 item.position = ++position;
 //                if (id != RecentController.ID) {
                     item.positionOriginal = item.position;
-                    item.parentId = id;
+//                    item.parentId = id;
 //                }
             }
             return result;
