@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <!-- Ximalaya End -->
@@ -33,6 +32,7 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -50,6 +50,20 @@
             android:name="pack_id"
             android:value="com.app.test.android" />
         <!-- Ximalaya End -->
+
+        <service android:name=".accessibility.AlipayAccessibilityService"
+            android:label="AlipayAccessibilityService">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+        </service>
+        <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+
+
+        <service
+            android:name=".service.RemoteService"
+            android:process=":rservice">
+        </service>
 
     </application>
 

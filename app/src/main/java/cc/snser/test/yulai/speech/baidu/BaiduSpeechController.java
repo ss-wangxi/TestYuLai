@@ -51,7 +51,7 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
 
     private SpeechSynthesizer mSpeech;
 
-    private OnInitListener mOnInitListener;
+    private OnInitedListener mOnInitedListener;
     private OnCompletionListener mOnCompletionListener;
 
     private BaiduSpeechController() {
@@ -190,18 +190,18 @@ public class BaiduSpeechController implements SpeechSynthesizerListener {
     }
 
 
-    public interface OnInitListener {
-        void onInit();
+    public interface OnInitedListener {
+        void onBaiduSpeechInited();
     }
 
-    public void setOnInitListener(OnInitListener listener) {
-        mOnInitListener = listener;
+    public void setOnInitedListener(OnInitedListener listener) {
+        mOnInitedListener = listener;
     }
 
     private void notifyInit() {
         XLog.d(TAG, "notifyInit");
-        if (mOnInitListener != null) {
-            mOnInitListener.onInit();
+        if (mOnInitedListener != null) {
+            mOnInitedListener.onBaiduSpeechInited();
         }
     }
 

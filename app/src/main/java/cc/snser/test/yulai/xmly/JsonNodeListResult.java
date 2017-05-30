@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import cc.snser.test.yulai.App;
 import cc.snser.test.yulai.util.RUtils;
+import cc.snser.test.yulai.util.XLog;
 
 /**
  * Created by Snser on 2017/1/15.
@@ -79,6 +80,7 @@ public class JsonNodeListResult {
             result.mode = Server.LIST_DIRECTORY;
             result.title = "";
             for (Category category : categoryList.getCategories()) {
+                XLog.d("Snser", category.getId() + " " + category.getCategoryName() + " " + category.getCoverUrlMiddle());
                 result.items.add(new JsonNodeItem(category, category.getId(), result.id, category.getId(), category.getCategoryName()));
             }
             result.total = result.items.size();
